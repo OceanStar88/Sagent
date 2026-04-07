@@ -46,20 +46,22 @@
 ## 🏗️ Architecture Overview
 
 ```mermaid
-flowchart LR
-    User --> Frontend
+flowchart RL
+    Tenant --> Frontend[Dashboard]
     Frontend --> Backend
+    Backend --> |WebSocket| Frontend
 
     Backend --> Twilio
     Twilio --> Backend
+    
+    subgraph Server-side
+        Backend[FastAPI] --> AI[AI: STT + LLM + TTS]
+        AI --> Backend
+        direction TB
+        Backend --> DB[(PostgreSQL)]
+    end
 
-    Backend --> AI[STT + LLM + TTS]
-    AI --> Backend
-
-    Backend --> DB[(PostgreSQL)]
-
-    Backend --> WS[WebSocket]
-    WS --> Frontend
+    Twilio <--> Lead
 ```
 
 ## ✨ Key Features
@@ -133,10 +135,10 @@ Sagent/
 
 ```mermaid
 sequenceDiagram
-    participant UI
-    participant Backend
     participant Twilio
+    participant Backend
     participant AI
+    participant UI
 
     UI->>Backend: Start Call
     Backend->>Twilio: Initiate Call
@@ -198,7 +200,7 @@ npm run dev
 
 ### 4. Configure environment
 
-Create `.env` file:
+Create [`.env`](.env) file:
 
 ```env
 DATABASE_URL=
@@ -223,11 +225,7 @@ OPENAI_API_KEY=
 
 ## 📚 Documentation
 
-Detailed system design available in:
-
-```
-/docs
-```
+Detailed system design available in [docs](./docs/1__System-Architecture-Design.md)
 
 Includes:
 

@@ -298,3 +298,8 @@ sequenceDiagram
     Backend->>DB: persist
     Backend->>Frontend: notify
 ```
+
+About Source Code
+
+- [Backend README](../backend/README.md)
+- [Frontend README](../frontend/README.md)
