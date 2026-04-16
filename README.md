@@ -1,15 +1,16 @@
-# 🚀 Sagent
-
-### Real-Time AI Voice Call Agent Platform
-
 <p align="center">
-  <img src="./frontend/logo.png" />
-</p>
- 
-<p align="center">
-  <b>Talk. Listen. Think. Respond — in real time.</b>
+  <img src="./frontend/logo.png" alt="Sagent Logo" width="160" />
 </p>
 
+<h1 align="center">Sagent</h1>
+
+<p align="center">
+  <b>Real-Time AI Voice Call Agent Platform</b>
+</p>
+
+<p align="center">
+  Talk. Listen. Think. Respond — in real time.
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/AI-Voice%20Agent-blue" />
