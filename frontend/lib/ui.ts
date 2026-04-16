@@ -50,16 +50,20 @@ export const speakerPillClass = "inline-flex items-center gap-2 rounded-none bor
 export function statusDotClass(status: string) {
   const value = status.toLowerCase();
 
-  if (["completed", "ready", "connected"].includes(value)) {
+  if (["live", "dialing", "ringing", "queued", "thinking", "in_progress", "connected"].includes(value)) {
     return "size-2 rounded-none bg-green-600 dark:bg-green-400";
   }
 
-  if (["dialing", "ringing", "queued", "thinking", "in_progress"].includes(value)) {
-    return "size-2 rounded-none bg-amber-500 dark:bg-amber-300";
+  if (["ended", "completed", "ready"].includes(value)) {
+    return "size-2 rounded-none bg-slate-500 dark:bg-slate-300";
   }
 
-  if (["failed", "error", "ended"].includes(value)) {
+  if (["failed", "error", "busy"].includes(value)) {
     return "size-2 rounded-none bg-red-600 dark:bg-red-400";
+  }
+
+  if (["missed", "no_answer", "dropped"].includes(value)) {
+    return "size-2 rounded-none bg-amber-500 dark:bg-amber-300";
   }
 
   return "size-2 rounded-none bg-indigo-600 dark:bg-indigo-400";

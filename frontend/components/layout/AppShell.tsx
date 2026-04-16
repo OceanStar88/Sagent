@@ -34,7 +34,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
-  const activePageLabel = NAV_ITEMS.find((item) => item.href === pathname)?.label ?? "Dashboard";
 
   // Desktop and mobile menus are tracked separately because they use different layouts and transitions.
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -51,6 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Derive compact account presentation values for the shell controls.
   const accountInitial = authUser?.display_name?.charAt(0).toUpperCase() || "A";
   const accountAvatarUrl = authUser?.avatar_url ?? null;
+  const activePageLabel = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ?? "Home";
 
   // Clear any pending delayed unmount for the mobile navigation rail.
   function clearMobileNavCloseTimeout() {
@@ -388,17 +388,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <div className="flex h-full min-w-0 justify-center overflow-x-hidden overflow-y-auto">
               <div className="grid w-full min-w-0 max-w-full content-start justify-items-center gap-1.5 overflow-x-hidden">
-                {NAV_ITEMS.map((item) => (
+                {NAV_ITEMS.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
                   <Link
                     key={item.href}
-                    className={mobileNavLinkClass(pathname === item.href)}
+                    className={mobileNavLinkClass(isActive)}
                     href={item.href}
-                    aria-current={pathname === item.href ? "page" : undefined}
+                    aria-current={isActive ? "page" : undefined}
                   >
-                    <NavIcon active={pathname === item.href} render={item.renderIcon} />
+                    <NavIcon active={isActive} render={item.renderIcon} />
                     <span className="text-[0.82rem] font-medium leading-tight">{item.label}</span>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -428,7 +431,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mt-3 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pr-0.5">
             <nav className="grid min-w-0 gap-1.5 overflow-x-hidden" aria-label="Primary">
               {NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                 return (
                   <Link

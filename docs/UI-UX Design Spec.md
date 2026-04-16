@@ -1,392 +1,277 @@
-# 🧠 Voice Call Agent SaaS — UI/UX Design Specifications
+# Voice Call Agent SaaS - UI/UX Design Specification
 
-# 1. System Architecture Overview
+## 1. Overview
 
-## Core Principle
+### Product Goal
+Build a reliable operations interface for configuring AI voice agents, managing leads, monitoring call outcomes, and reviewing conversation quality.
 
-> **Deterministic Navigation + Consistent Multi-Panel System**
+### Design Principles
+- Deterministic navigation: users should always know where they are and what data scope they are viewing.
+- Progressive disclosure: start with summaries, then allow deeper drill-down.
+- Operational clarity: status, failures, and real-time activity should be obvious at a glance.
+- Speed-first workflows: common tasks should be reachable within 1 to 3 actions.
+
+## 2. Information Architecture
 
 ```txt
 User
-  ↓
-Home (Tenants)
-  ↓
-Tenant Workspace
-  ↓
-Feature Pages (Agents / Leads / Calls / ...)
+  -> Home
+  -> Agents
+  -> Leads
+  -> Calls
+  -> Analytics
 ```
 
+### Primary Navigation
+- Home
+- Agents
+- Leads
+- Calls
+- Analytics
 
-# 2. Navigation & Context Model
+### Global Utilities
+- Search
+- Notifications
+- User account menu
+- Theme toggle
 
-## 2.1 Context Hierarchy
+## 3. Navigation and Context Model
 
+### Context Hierarchy
 ```txt
-User (Global)
-   ↓
-Home (Tenant List)
-   ↓
-Tenant Workspace (Scoped Data)
+User Context (global)
+   -> Product Context (shared account data)
+   -> Feature Context (Agents, Leads, Calls, Analytics)
 ```
 
-
-## 2.2 Sidebar Behavior
-
-### App Home
-
+### Sidebar Behavior
 ```txt
-[ App Logo ] -> App Home
-
-```
-
-### Tenant Context
-
-```txt
-[ Tenant Logo ] → Tenant Home
+[ Product Logo ] -> Home
 
 Agents
 Leads
 Calls
 Analytics
-
-Members*   (Owner/Admin only)
-Billing*   (Owner/Admin only)
-
 ```
 
-### User Account Menu (popup)
-
+### Account Menu
 ```txt
-[ User Avatar ]  → Account Menu Trigger
+[ User Avatar ] -> Account Menu
 Profile
 Preferences
 Subscription
-[Sign out]
+Sign out
 ```
 
+## 4. Layout System
 
-# 3. Core Layout System
-
-## 3.1 Universal Layout Pattern
-
+### Universal Layout Pattern
 ```txt
 +-----------------------------------------------------------+
 | Sidebar | Main List | Sub List | Details Panel            |
 +-----------------------------------------------------------+
 ```
 
-![UI Layout](./images/UI%20layout%20-%20tenant-free.png)
+### Panel Responsibilities
+| Panel         | Purpose |
+| ---           | --- |
+| Sidebar       | App-level navigation |
+| Main List     | Primary entities (agents, leads, calls) |
+| Sub List      | Secondary entities or tabs |
+| Details Panel | Full detail, transcript, forms, actions |
 
-
-## 3.2 Panel Responsibilities
-
-| Panel         | Function                          |
-| ------------- | --------------------------------- |
-| Sidebar       | Navigation                        |
-| Main List     | Primary entities                  |
-| Sub List      | Secondary entities                |
-| Details Panel | Deep content / transcript / forms |
-
-
-## 3.3 Responsive Behavior
-
-### Desktop
-
-* Full 4-panel layout
+### Responsive Behavior
+- Desktop: full four-panel layout.
+- Tablet: three-panel layout; details panel overlays or docks based on available width.
+- Mobile: stacked navigation flow from list to detail.
 
 ```txt
-Sidebar | Main List | Sub List | Details
+Desktop: Sidebar | Main List | Sub List | Details
+Tablet:  Main List | Sub List -> Details
+Mobile:  Main List -> Sub List -> Details
 ```
 
-### Tablet
+## 5. Home Page
 
+### Purpose
+Provide a concise operational summary and quick links to high-frequency actions.
+
+### Suggested Blocks
+- Key metrics: total calls, live calls, failed calls, average duration.
+- Recent activity feed: latest calls and status changes.
+- Quick actions: create lead, start test call, edit agent settings.
+
+## 6. Call Status System
+
+### Status Types
+| Status | Meaning | UX Behavior |
+| --- | --- | --- |
+| Live | Call is active | Pulsing green indicator, duration timer updates every second |
+| Ended | Completed normally | Neutral badge and full transcript access |
+| Failed | Error condition | Red badge with visible error reason |
+| Missed | Not answered or dropped | Yellow badge with partial or empty transcript state |
+
+### Status Tokens
 ```txt
-Main List | Sub List -> Details 
+Live   -> green / animated
+Ended  -> gray / stable
+Failed -> red / prominent
+Missed -> yellow / warning
 ```
 
-### Mobile
+### Behavior Rules
+- Live calls stream updates in real time.
+- Ended calls expose complete timeline and transcript.
+- Failed calls show reason and retry action if applicable.
+- Missed calls provide follow-up CTA (call back, schedule retry).
 
+## 7. Agents Page
+
+### Layout
 ```txt
-Main List → Sub List → Details
+Agents List | Agent Panel | Details
 ```
 
-
-# 4. Home Page (Tenant Selection)
-
+### Agents List Item
 ```txt
-< App Logo & Name >
-
-[ + Create Tenant ]
-
-[ Tenant Card ] [ Tenant Card ]
+| Avatar | Agent Name (Phone Number)            |
+|        | last call time, duration, status     |
 ```
 
-### Tenant Card
-
-* Tenant Logo
-* Tenant Name
-* User Role
-* Last activity (optional)
-
-
-# 5. Tenant Home Page
-
+### Agent Panel
 ```txt
-Tenant Logo
-Tenant Name
-
-Stats:
-- Agents Count
-- Leads Count
-- Total Calls
-- Live Calls
-```
-
-
-# 6. 🔴 Call Status System
-
-## 6.1 Status Types
-
-| Status     | Meaning                 | UX                     |
-| ---------- | ----------------------- | ---------------------- |
-| **Live**   | Call is ongoing         | Pulsing indicator (🟢) |
-| **Ended**  | Completed successfully  | Neutral (⚪)           |
-| **Failed** | System/connection error | Error (🔴)             |
-| **Missed** | Not answered / dropped  | Warning (🟡)           |
-
-
-## 6.2 Visual Representation
-
-```txt
-[🟢] Live     (green, animated)
-[⚪] Ended    (gray)
-[🔴] Failed   (red)
-[🟡] Missed   (yellow)
-```
-
-
-## 6.3 Behavior Rules
-
-* 🟢 **Live**
-
-  * Real-time updates (WebSocket)
-  * Locks transcript until completed (optional)
-
-* ⚪ **Ended**
-
-  * Full transcript available
-
-* 🔴 **Failed**
-
-  * Show error reason (if available)
-
-* 🟡 **Missed**
-
-  * No transcript or partial
-
-
-# 7. Agents Page
-
-
-* Layout
-
-```txt
-Agents List | Agent | Details
-```
-
-
-## 7.1 Agents List
-
-```txt
-Agents List Item A
-Agents List Item B
-```
-
-### 7.1.1 Agents List Item
-
-```txt
-| Avatar | Agent Name (Phone Num)                 |
-|        | last call start time, duration, status |
-```
-
-## 7.2 Agent 
-
-```txt
-Agent avatar | name (phone number)
+Agent avatar | name (phone)
 [ Calls | Settings ]
 ```
 
-### 7.2.1 Calls Tab List Item
+### Settings Sections
+- General
+- Voice
+- Behavior
+- Telephony
+- Advanced
 
+### Transcript Detail (Calls tab)
+- Header: participant identity, start time, duration, status.
+- Body: timestamped utterances with speaker labels.
+- Footer: quick actions (download, copy transcript, open lead profile).
+
+## 8. Leads Page
+
+### Layout
 ```txt
-| Avatar | Lead Name (Phone Num)                  |
-|        | last call start time, duration, status |
+Leads List | Lead Panel | Details
 ```
 
-### 7.2.2 Settings Tab List
-
-```txt
-General
-Voice
-Behavior
-Telephony
-Advanced
-```
-
-## 7.3 Details Panel
-
-### Transcript View for Agent Calls tab item selected
-
-* Header
-
-```txt
-| Avatar | Lead Name (Phone Num)             |
-|        | call start time, duration, status |
-```
-
-* Content 
-
-```txt
-(00:01) Agent Name (phone num)
-...
-
-(00:03) Lead Name  (phone num)
-...
-
-```
-
-* Footer
-
-```txt
-| Avatar | Agent Name (Phone Num) |
-```
-
-
-# 8. Leads Page
-
-* Layout: 
-
-```txt
-Leads List | Lead | Details
-```
-
-
-## Tabs
-
+### Tabs
 ```txt
 [ Info | Calls ]
 ```
 
-
-## Calls Tab
-
-```txt
-Call Item:
+### Calls Tab Item
 - Timestamp
 - Duration
-- Status  ← NEW
-```
+- Status
 
+### Details Panel Modes
+- Lead profile info mode.
+- Call transcript mode with status badge and metadata.
 
-## Details Panel
+## 9. Calls Page
 
-* Info view OR
-* Transcript view (with status badge)
-
-
-# 9. Calls Page (Global)
-
-## Layout
-
+### Layout
 ```txt
 [ Categories ] | [ Calls List ] | [ Details Panel ]
 ```
 
+### Categories
+- All
+- Inbound
+- Outbound
 
-## Categories
-
-```txt
-All
-Inbound
-Outbound
-```
-
-
-## Calls List Item
-
-```txt
+### Calls List Item
 - Agent
 - Lead
 - Duration
 - Status
 - Timestamp
-```
 
-## Details Panel
+### Details Panel
+- Full transcript view.
+- Metadata block (direction, status, timing, outcome).
+- Secondary actions (copy, export, report issue).
 
-* Transcript + Status badge
+## 10. Analytics Page
 
+### Core Metrics
+- Total calls
+- Live calls
+- Ended calls
+- Failed calls
+- Missed calls
+- Average duration
+- Success rate
 
-# 10. Analytics Page
+### Visualizations
+- Calls over time segmented by status.
+- Agent performance comparison.
+- Failure trend and top failure reasons.
+- Missed-call trend with callback conversion.
 
+## 11. Interaction Design
 
-## Metrics
+### UI States
+| State | Expected UX |
+| --- | --- |
+| Empty | Explain why list is empty and provide CTA |
+| Loading | Skeleton placeholders matching final layout |
+| Error | Clear message and retry action |
+| Success | Inline confirmation and optional toast |
 
-* Total Calls
-* Live Calls (NEW)
-* Ended Calls
-* Failed Calls
-* Missed Calls
-* Avg Duration
-* Success Rate
+### Feedback Patterns
+- Toast notifications for background completion.
+- Inline validation for form fields.
+- Confirm dialogs for destructive actions.
 
+## 12. Accessibility
 
-## Charts
+### Minimum Requirements
+- Keyboard navigable lists, tabs, menus, and dialogs.
+- Visible focus states on all interactive elements.
+- Color contrast compliant with WCAG AA.
+- Status chips include text labels, not color only.
+- All icon-only actions include accessible labels.
 
-* Calls over time (stacked by status)
-* Agent performance
-* Failure rate trend
+### Screen Reader Requirements
+- Live call updates should announce meaningful changes only.
+- Transcript entries should preserve reading order and timestamps.
+- Dialogs should trap focus and restore focus on close.
 
+## 13. Content and Tone Guidelines
 
-# 11. Members Page
+- Use concise, operational language.
+- Prefer action verbs in buttons and CTAs.
+- Error messages should include cause and next step.
+- Avoid ambiguous labels like Submit or Save Changes when context is broad.
 
-```txt
-User | Role | Actions
-```
+## 14. Performance and Perceived Speed
 
+- Time to first useful content should prioritize list shell and key stats.
+- Background-fetch detail panels where likely navigation is predictable.
+- Stream partial call updates before full transcript finalization.
+- Preserve scroll and selection state when returning to list views.
 
-# 12. Billing Page
+## 15. Security and Privacy UX
 
-```txt
-Plan
-Usage
-Payment
-```
+- Mask secrets and sensitive values by default.
+- Explicitly label actions that expose or export data.
+- Role-gate sensitive navigation and actions in both UI and API.
+- Log audit-relevant actions such as access changes and data exports.
 
+## 16. Final Notes
 
-# 13. Interaction Design
-
-## 13.1 States
-
-| State   | UX       |
-| ------- | -------- |
-| Empty   | CTA      |
-| Loading | Skeleton |
-| Error   | Retry    |
-
-
-## 13.2 Feedback
-
-* Toasts
-* Inline validation
-* Confirm dialogs
-
-
-# 17. Final Notes
-
-### system now supports:
-
-* Real-time monitoring (Live calls)
-* Operational debugging (Failed)
-* Business tracking (Missed vs Ended)
-
+This specification now supports:
+- Real-time call monitoring and operational triage.
+- Clear status-driven workflows for support and QA teams.
+- Scalable multi-panel information density from desktop to mobile.
+- Consistent interaction patterns across Agents, Leads, Calls, and Analytics.

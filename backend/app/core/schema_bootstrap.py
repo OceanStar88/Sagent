@@ -1,5 +1,3 @@
-from collections.abc import Sequence
-
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
@@ -19,8 +17,6 @@ def ensure_user_owned_schema(engine: Engine) -> None:
         for table_name in ("agent_configs", "contacts", "calls", "users")
         if inspector.has_table(table_name)
     }
-    user_table_columns = table_columns.get("users", set())
-    tenant_backfill_available = "tenant_id" in user_table_columns
 
     uuid_sql = UUID_TYPE_BY_DIALECT.get(engine.dialect.name, "UUID")
 
@@ -34,61 +30,10 @@ def ensure_user_owned_schema(engine: Engine) -> None:
         if inspector.has_table("agent_configs"):
             connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_agent_configs_user_id ON agent_configs (user_id)"))
 
-        if tenant_backfill_available:
-            backfill_user_owned_tables(connection, table_columns)
+        backfill_user_owned_tables(connection)
 
 
-def backfill_user_owned_tables(connection, table_columns: dict[str, Sequence[str]]) -> None:
-    if "tenant_id" in table_columns.get("agent_configs", set()):
-        connection.execute(
-            text(
-                """
-                UPDATE agent_configs
-                SET user_id = (
-                    SELECT users.id
-                    FROM users
-                    WHERE users.tenant_id = agent_configs.tenant_id
-                    ORDER BY users.created_at ASC
-                    LIMIT 1
-                )
-                WHERE user_id IS NULL
-                """
-            )
-        )
-
-    if "tenant_id" in table_columns.get("contacts", set()):
-        connection.execute(
-            text(
-                """
-                UPDATE contacts
-                SET user_id = (
-                    SELECT users.id
-                    FROM users
-                    WHERE users.tenant_id = contacts.tenant_id
-                    ORDER BY users.created_at ASC
-                    LIMIT 1
-                )
-                WHERE user_id IS NULL
-                """
-            )
-        )
-
-    if "tenant_id" in table_columns.get("calls", set()):
-        connection.execute(
-            text(
-                """
-                UPDATE calls
-                SET user_id = (
-                    SELECT users.id
-                    FROM users
-                    WHERE users.tenant_id = calls.tenant_id
-                    ORDER BY users.created_at ASC
-                    LIMIT 1
-                )
-                WHERE user_id IS NULL
-                """
-            )
-        )
+def backfill_user_owned_tables(connection) -> None:
 
     connection.execute(
         text(

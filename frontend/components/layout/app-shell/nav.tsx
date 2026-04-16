@@ -14,7 +14,7 @@ export type AccountItem = {
   icon: ReactNode;
 };
 
-function OverviewIcon(filled: boolean) {
+function HomeIcon(filled: boolean) {
   if (filled) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
@@ -30,7 +30,7 @@ function OverviewIcon(filled: boolean) {
   );
 }
 
-function PhoneIcon(filled: boolean) {
+function AgentsIcon(filled: boolean) {
   if (filled) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
@@ -46,7 +46,7 @@ function PhoneIcon(filled: boolean) {
   );
 }
 
-function HistoryIcon(filled: boolean) {
+function LeadsIcon(filled: boolean) {
   if (filled) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
@@ -64,7 +64,7 @@ function HistoryIcon(filled: boolean) {
   );
 }
 
-function SettingsIcon(filled: boolean) {
+function CallsIcon(filled: boolean) {
   if (filled) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
@@ -81,11 +81,29 @@ function SettingsIcon(filled: boolean) {
   );
 }
 
+function AnalyticsIcon(filled: boolean) {
+  if (filled) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 fill-current">
+        <path d="M4 20h16a1 1 0 1 0 0-2h-1.5v-8.2a1 1 0 0 0-1-1h-2.7a1 1 0 0 0-1 1V18h-2.6V6.9a1 1 0 0 0-1-1H7.5a1 1 0 0 0-1 1V18H4a1 1 0 1 0 0 2Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6">
+      <path d="M4 20h16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M7 18V7h3v11M14 18v-7h3v7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/home", label: "Overview", renderIcon: OverviewIcon },
-  { href: "/phone", label: "Phone", renderIcon: PhoneIcon },
-  { href: "/history", label: "History", renderIcon: HistoryIcon },
-  { href: "/settings", label: "Settings", renderIcon: SettingsIcon },
+  { href: "/home", label: "Home", renderIcon: HomeIcon },
+  { href: "/agents", label: "Agents", renderIcon: AgentsIcon },
+  { href: "/leads", label: "Leads", renderIcon: LeadsIcon },
+  { href: "/calls", label: "Calls", renderIcon: CallsIcon },
+  { href: "/analytics", label: "Analytics", renderIcon: AnalyticsIcon },
 ];
 
 export const ACCOUNT_ITEMS: AccountItem[] = [
