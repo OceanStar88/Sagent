@@ -1,0 +1,41 @@
+[project]
+name = "sagent-backend"
+version = "0.1.0"
+description = "FastAPI backend for the Sagent real-time AI voice call platform"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "cloudinary==1.44.1",
+    "email-validator==2.2.0",
+    "fastapi==0.116.1",
+    "passlib==1.7.4",
+    "pillow==11.2.1",
+    "psycopg[binary]==3.2.9",
+    "pydantic-settings==2.10.1",
+    "python-jose[cryptography]==3.5.0",
+    "python-multipart==0.0.20",
+    "sqlalchemy==2.0.41",
+    "uvicorn[standard]==0.35.0",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.5",
+    "ruff==0.11.10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B008"]
+

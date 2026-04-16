@@ -3,7 +3,7 @@
 ### Real-Time AI Voice Call Agent Platform
 
 <p align="center">
-  <img src="./frontend/public/Sagent-logo.png" />
+  <img src="./frontend/logo.png" />
 </p>
  
 <p align="center">
@@ -17,9 +17,9 @@
   <img src="https://img.shields.io/badge/Voice-ElevenLabs-purple" />
   <img src="https://img.shields.io/badge/Telephony-Twilio-red" />
   <img src="https://img.shields.io/badge/Backend-FastAPI-green" />
-  <img src="https://img.shields.io/badge/Frontend-React-blue" />
+  <img src="https://img.shields.io/badge/Frontend-Next.js-black" />
   <img src="https://img.shields.io/badge/Realtime-WebSocket-orange" />
-  <img src="https://img.shields.io/badge/Database-PostgreSQL-blue" />
+  <img src="https://img.shields.io/badge/Runtime-Bun-f6a623" />
 </p>
 
 
@@ -32,13 +32,15 @@
 * 🧠 Understand speech using LLMs
 * 🗣️ Respond with natural voice
 * 📡 Stream live transcripts to a dashboard
+* 🎛️ Manage agent settings, account pages, and theme preferences in the browser
+* 🔐 Support email verification, Google sign-in, avatars, and password recovery
 
 
 ## ⚡ Core Capabilities
 
 * 🔁 **Streaming pipeline**: STT → LLM → TTS
 * 📡 **Live transcript via WebSocket**
-* 🧑‍💼 **Multi-tenant architecture**
+* 🧑‍💼 **User-scoped account architecture**
 * ⚙️ **Configurable AI agent (prompt-driven)**
 * 📞 **Twilio call integration (inbound + outbound)**
 
@@ -47,7 +49,7 @@
 
 ```mermaid
 flowchart RL
-    Tenant --> Frontend[Dashboard]
+  Operator --> Frontend[Dashboard]
     Frontend --> Backend
     Backend --> |WebSocket| Frontend
 
@@ -68,7 +70,7 @@ flowchart RL
 
 * 🔁 Real-time voice interaction (STT → LLM → TTS)
 * 📡 Live transcript streaming (WebSocket)
-* 🧑‍💼 Multi-tenant architecture
+* 🧑‍💼 User-scoped account architecture
 * ⚙️ Configurable AI agent (prompt-based behavior)
 * 📞 Outbound & inbound call support
 * 🗂️ Call history with transcripts & recordings
@@ -79,9 +81,9 @@ flowchart RL
 ## 🎯 Why This Project Stands Out
 
 * Real-time AI system (not batch or async)
-* Full-stack architecture (FastAPI + React)
+* Full-stack architecture (FastAPI + Next.js)
 * Voice + LLM + Telephony integration
-* Production-ready design (multi-tenant, scalable)
+* Production-ready design (secure, scalable)
 
 
 ## 🎥 Demo Preview (Coming Soon)
@@ -93,14 +95,14 @@ flowchart RL
 
 ### Backend
 
-* FastAPI (Python)
+* FastAPI (Python, managed with uv)
 * PostgreSQL (Render)
 * WebSocket (real-time streaming)
 
 ### Frontend
 
-* React (TypeScript)
-* Tailwind CSS
+* Next.js App Router + React 19 (TypeScript, managed with Bun)
+* Tailwind CSS v4 + next/font
 
 ### AI & Voice
 
@@ -122,9 +124,8 @@ flowchart RL
 ```bash
 Sagent/
 ├── backend/      # FastAPI backend
-├── frontend/     # React dashboard
+├── frontend/     # Next.js operator dashboard
 ├── docs/         # system design documents
-├── infra/        # deployment configs
 └── README.md
 ```
 
@@ -166,7 +167,7 @@ sequenceDiagram
 
 * **Real-time first** (low-latency streaming)
 * **Modular architecture** (clean separation)
-* **Scalable by design** (multi-tenant ready)
+* **Scalable by design** (user-scoped and extensible)
 * **AI-centric** (prompt-driven behavior)
 
 
@@ -184,8 +185,8 @@ cd sagent
 
 ```bash
 cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+uv sync
+uv run uvicorn app.main:app --reload
 ```
 
 
@@ -193,8 +194,8 @@ uvicorn app.main:app --reload
 
 ```bash
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 
@@ -205,6 +206,26 @@ Create [`.env`](.env) file:
 ```env
 DATABASE_URL=
 JWT_SECRET=
+FRONTEND_APP_URL=http://localhost:3000
+
+AUTH_ALLOW_TEST_EMAIL_DOMAINS=true
+EMAIL_VERIFICATION_EXPIRE_HOURS=24
+GOOGLE_OAUTH_CLIENT_ID=
+
+AVATAR_MAX_BYTES=5242880
+AVATAR_IMAGE_SIZE=512
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_AVATAR_FOLDER=sagent/avatars
+
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_USE_TLS=true
+SMTP_USE_SSL=false
+SMTP_FROM_EMAIL=no-reply@sagent.local
 
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
@@ -214,9 +235,29 @@ ELEVENLABS_API_KEY=
 OPENAI_API_KEY=
 ```
 
+For the frontend, create `frontend/.env.local` with:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/v1
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+```
+
+## Account Flows
+
+Sagent now includes the following account capabilities in addition to the core call dashboard:
+
+* Email/password signup with required email verification
+* Verification resend and blocked sign-in for unverified password accounts
+* Google signup and sign-in through Google Identity Services
+* Password recovery with forgot-password and reset-password routes
+* Cloudinary-backed profile avatars normalized with Pillow
+* Persisted account theme preference across signed-in sessions
+
 
 ## 📡 Demo Capabilities
 
+* Create an operator account with email signup
+* Sign in with email and password
 * Start a call from dashboard
 * Receive inbound call
 * Watch live transcript

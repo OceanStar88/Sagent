@@ -9,7 +9,7 @@
 
 Defines **end-to-end interaction flows** across:
 
-* Frontend (React)
+* Frontend (Next.js App Router client)
 * Backend (FastAPI)
 * Telephony via Twilio
 * AI Engine (STT + LLM + TTS via OpenAI + ElevenLabs)
@@ -30,7 +30,8 @@ sequenceDiagram
     Backend->>DB: Validate user
     DB-->>Backend: user record
     Backend-->>Frontend: JWT token
-    Frontend->>Frontend: Store token
+    Frontend->>Frontend: Store token in localStorage (sagent.token)
+    Frontend->>Frontend: Redirect to /home
 ```
 
 
@@ -47,7 +48,7 @@ sequenceDiagram
     participant Frontend
     participant User
 
-    User->>Frontend: Click "Call"
+    User->>Frontend: Click "Call now"
     Frontend->>Backend: POST /calls/outbound
 
     Backend->>Twilio: Create call
@@ -62,11 +63,12 @@ sequenceDiagram
         Backend->>AI: Audio stream
         AI->>Backend: Transcript + Response
         Backend->>Twilio: AI audio
-        Backend->>Frontend: Transcript stream
+        Backend->>Frontend: Transcript stream over observer WebSocket
     end
 
     Twilio->>Backend: Call ends
     Backend->>DB: Update call record
+    Backend->>Frontend: call_state(completed)
 ```
 
 
@@ -79,6 +81,7 @@ sequenceDiagram
     participant AI
     participant Frontend
 
+    Frontend->>Backend: WS connect /ws/observe/{call_id}?token=...
     Twilio->>Backend: audio chunk (caller)
 
     Backend->>AI: send audio
@@ -96,6 +99,7 @@ sequenceDiagram
     Backend->>Frontend: transcript (agent)
 
     Backend->>Twilio: TTS audio
+    Backend->>Frontend: call_state(listening|thinking|completed)
 ```
 
 
@@ -148,10 +152,12 @@ sequenceDiagram
     loop Real-time updates
         Backend->>Frontend: transcript (user)
         Backend->>Frontend: transcript (agent)
+        Backend->>Frontend: partial_transcript
         Backend->>Frontend: agent_thinking
     end
 
     Backend->>Frontend: call_state (completed)
+    Frontend->>Frontend: Refresh calls + clear activeCallId
 ```
 
 
@@ -166,6 +172,7 @@ sequenceDiagram
     Frontend->>Backend: PUT /settings
     Backend->>DB: Update agent_config
     Backend-->>Frontend: Success response
+    Frontend->>Frontend: Show success alert
 ```
 
 
@@ -196,6 +203,42 @@ sequenceDiagram
     Backend->>DB: Query call + transcripts
     DB-->>Backend: data
     Backend-->>Frontend: response
+    Frontend->>Frontend: Render archived transcript panel
+```
+
+
+## 8.1 Account Navigation Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+
+    User->>Frontend: Open account menu
+    Frontend->>Frontend: Show profile/preferences/subscription links
+    User->>Frontend: Select Preferences
+    Frontend->>Frontend: Navigate to /preferences
+    Frontend->>Frontend: Mark account menu item active
+```
+
+
+## 8.2 Theme Preference Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Browser
+
+    User->>Frontend: Change theme on login page or preferences page
+    Frontend->>Browser: Save sagent.theme in localStorage
+    Frontend->>Browser: Set documentElement.dataset.theme
+    Browser-->>Frontend: Apply light or dark CSS variables
+
+    opt system mode
+        Browser-->>Frontend: prefers-color-scheme changes
+        Frontend->>Browser: Update resolved theme automatically
+    end
 ```
 
 

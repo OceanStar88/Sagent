@@ -1,406 +1,198 @@
-# 📄 Frontend System Design
+# Frontend System Design
 
-**AI Voice Call Agent Dashboard (React + TypeScript)**
+**AI Voice Call Agent Dashboard (Next.js App Router + TypeScript + Bun)**
 
-
-## 1. 🧠 Overview
+## 1. Overview
 
 ### 1.1 Purpose
 
-The frontend provides a **dashboard interface** for:
+The frontend is a browser-based operator console for:
 
-* managing AI voice agent settings
-* initiating and receiving calls
-* monitoring live conversations (transcripts)
-* reviewing call history
+- authenticating into the demo workspace
+- launching monitored outbound calls
+- observing live transcripts over WebSocket
+- reviewing archived calls and transcripts
+- editing tenant settings
+- managing account profile, subscription summary, and theme preference
 
+### 1.2 Current Tech Stack
 
-### 1.2 Tech Stack
+- Framework: Next.js 15 App Router
+- UI runtime: React 19 client components
+- Language: TypeScript
+- Package manager/runtime: Bun
+- Styling: Tailwind CSS v4 with CSS-variable theme tokens and `next/font`
+- Real-time transport: WebSocket observer channel
+- State model: React state and custom hooks
 
-* Framework: React (TypeScript)
-* State: React Query + local state
-* Styling: Tailwind CSS (recommended)
-* Real-time: WebSocket
-
-
-## 2. 🏗️ High-Level Architecture
-
-```mermaid
-flowchart LR
-    UI[React UI Components]
-    State[State Management]
-    API[REST API Client]
-    WS[WebSocket Client]
-
-    UI --> State
-    State --> API
-    State --> WS
-```
-
-
-## 3. 📐 Application Structure
-
-
-## 3.1 Page Structure
-
-```text
-App
-├── Auth (Login)
-├── Dashboard Layout
-│   ├── Sidebar
-│   ├── Home Page
-│   ├── Phone Page
-│   └── Settings Page
-```
-
-
-## 3.2 Routing
-
-```text
-/            → Login
-/home        → Dashboard
-/phone       → Call interface
-/settings    → Config
-```
-
-
-## 4. 🧩 Core Components
-
-
-## 4.1 Layout
+## 2. High-Level Architecture
 
 ```mermaid
 flowchart LR
-    Sidebar --> Content
+    Routes[App Router Pages]
+    Shell[AppShell]
+    Hooks[Custom Hooks]
+    API[REST Client Helpers]
+    WS[Observer WebSocket]
+    Storage[Local Storage]
+
+    Routes --> Shell
+    Routes --> Hooks
+    Hooks --> API
+    Hooks --> WS
+    Hooks --> Storage
 ```
 
-### Sidebar
+## 3. Application Structure
 
-* Home
-* Phone
-* Settings
-
-
-## 4.2 Home Page
-
-### Purpose
-
-* entry point
-* navigation cards
-
-
-### UI Elements
+### 3.1 Route Structure
 
 ```text
-[ Settings Card ]
-[ Phone Card ]
+/               → Login page
+/home           → Overview dashboard
+/phone          → Outbound call desk + observer transcript
+/history        → Call archive + transcript detail
+/settings       → Tenant configuration
+/profile        → Account profile summary
+/preferences    → Theme preferences
+/subscription   → Mocked plan and usage page
 ```
 
+### 3.2 Shared Layout Strategy
 
-## 4.3 Settings Page
+- The login page is a standalone route with its own centered auth shell.
+- All authenticated routes render inside `AppShell`.
+- `AppShell` provides the desktop sidebar, mobile top bar, mobile drawer, account menus, and sign-out modal.
+- Sidebar collapse state is persisted in localStorage.
 
+## 4. Core Frontend Modules
 
-### Sections
+### 4.1 Root layout
 
-#### 1. Twilio Config
+`app/layout.tsx` is responsible for:
 
-#### 2. ElevenLabs Config
+- loading the global fonts
+- registering metadata and icons
+- loading `globals.css`
+- applying the shared font family to the document body
 
-#### 3. OpenAI Config
+### 4.2 Authentication route
 
-#### 4. Agent Prompt (Important)
+`app/page.tsx` is responsible for:
 
+- collecting email and password
+- calling `POST /auth/login`
+- storing the JWT in localStorage through `lib/auth.ts`
+- redirecting successful logins to `/home`
+- exposing a top-right theme toggle for light, dark, and system preference
 
-### Agent Prompt UI
+### 4.3 Shared application shell
 
-```text
-[ Textarea ]
-"You are a helpful Singapore call assistant..."
-```
+`components/layout/AppShell.tsx` handles:
 
+- route-aware primary navigation
+- route-aware account navigation for `/profile`, `/preferences`, and `/subscription`
+- desktop and mobile account menus
+- sign-out confirmation flow
+- responsive navigation behavior
+- page-title updates based on the active route
 
-## 4.4 Phone Page (Core UX)
+### 4.4 Phone experience
 
-This is your **main demo screen**
+The phone screen is split into two main surfaces:
 
+- `CallPanel.tsx`: starts outbound calls from the contact list and ends the active call
+- `TranscriptView.tsx`: shows live transcript messages, partial transcript text, call state, and elapsed timer
 
-### 4.4.1 Layout
+`CallHistoryList.tsx` complements the live phone experience by keeping recent call context visible beside the active observer stream.
 
-```mermaid
-flowchart TB
-    Header
-    CallArea
-    Transcript
-    Contacts
-```
+### 4.5 Settings and account pages
 
+- `settings/page.tsx`: edits Twilio, voice provider, OpenAI, and system prompt values
+- `history/page.tsx`: loads call summaries and a detail transcript panel
+- `profile/page.tsx`: displays the current operator and workspace summary
+- `preferences/page.tsx`: lets the operator choose light, dark, or system theme behavior
+- `subscription/page.tsx`: shows mocked billing and usage stats for the MVP
 
-### 4.4.2 States
+## 5. State and Hook Design
 
-| State       | UI                |
-| ----------- | ----------------- |
-| Idle        | call history      |
-| Calling     | ringing UI        |
-| Active Call | transcript stream |
-| Ended       | history view      |
+### 5.1 `useAuth`
 
+- owns login state and token hydration
+- exposes `signIn` used by the login page
+- uses `sagent.token` in localStorage
 
-## 5. 📞 Call Interface Design
+### 5.2 `useCall`
 
+- loads calls and contacts on mount
+- loads the selected call detail transcript
+- starts outbound calls through `POST /calls/outbound`
+- ends active calls through `POST /calls/{callId}/end`
+- opens the observer WebSocket when `activeCallId` is set
+- refreshes lists when calls complete
 
-## 5.1 Idle State
+### 5.3 `useThemePreference`
 
-```text
-[ Contact List ]
-[ Call History ]
-```
+- exposes `themePreference`, `resolvedTheme`, `setThemePreference`, and `cycleThemePreference`
+- persists under `sagent.theme`
+- writes the active theme to `document.documentElement.dataset.theme`
+- supports live OS theme changes while in `system` mode
 
+## 6. Visual System
 
-## 5.2 Calling State
+### 6.1 Styling approach
 
-```text
-Calling +65 XXXX...
-[ Cancel Button ]
-```
+- Tailwind CSS v4 is the primary styling layer for pages, the app shell, and shared phone components.
+- `app/globals.css` is limited to theme variables and base document rules.
+- `lib/ui.ts` holds shared Tailwind class recipes for reusable UI patterns.
+- The design system still uses CSS variables for surfaces, text, borders, brand colors, and shadows.
 
+### 6.2 Typography
 
-## 5.3 Active Call State (Critical)
+- Headings and body text use Space Grotesk through `next/font`.
+- IBM Plex Mono is available for compact monospace accents.
+- The root font size is slightly reduced so the dashboard feels denser and more operator-oriented.
 
+### 6.3 Theme system
 
-### Layout
+- Light and dark palettes are defined at the root level.
+- The login route and dashboard share the same theme variables.
+- The preferences page is the explicit destination for choosing theme mode.
+- The login page also exposes a quick theme toggle before sign-in.
 
-```text
-----------------------📞 Call in Progress
+## 7. Realtime Observer Design
 
-[ Status: Listening / Thinking / Speaking ]
+### 7.1 WebSocket connection
 
-----------------------Transcript:
-
-User: Hello
-Agent: Hi, how can I help?
-
-----------------------[ End Call Button ]
-```
-
-
-## 6. 💬 Transcript UI Design
-
-
-## 6.1 Chat Style
-
-```text
-(User - right)
-Hello, I want to ask...
-
-(Agent - left)
-Sure, how can I help?
-```
-
-
-## 6.2 Message Model
-
-```ts
-type Message = {
-  speaker: "user" | "agent";
-  text: string;
-  timestamp: number;
-};
-```
-
-
-## 6.3 Auto Scroll
-
-* scroll to latest message
-* smooth animation
-
-
-## 6.4 Partial Transcript Handling
-
-* update last message dynamically
-
-
-## 7. ⚡ Real-Time WebSocket Design
-
-
-## 7.1 Connection
+The frontend derives the observer URL from `NEXT_PUBLIC_API_BASE_URL`:
 
 ```ts
 const ws = new WebSocket(
-  `wss://api/ws/observe/${callId}?token=${token}`
+  `${wsBase}/ws/observe/${callId}?token=${encodeURIComponent(token)}`
 );
 ```
 
+### 7.2 Event handling
 
-## 7.2 Event Handling
+`useCall` currently handles these events:
 
-```ts
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
+- `call_state`: updates the status pill and closes the active observer when the call completes
+- `agent_thinking`: moves the UI into a thinking state
+- `partial_transcript`: updates the temporary in-progress user transcript
+- `transcript`: appends a final transcript message to the stream
+- `error`: surfaces the observer error to the page
 
-  switch (data.type) {
-    case "transcript":
-      addMessage(data);
-      break;
+### 7.3 Transcript rendering rules
 
-    case "partial_transcript":
-      updatePartial(data);
-      break;
+- user and agent messages render as separate message cards
+- partial transcript text is displayed as a temporary user card
+- the transcript view auto-scrolls to the latest content
+- elapsed call duration updates every second while the page is open
 
-    case "call_state":
-      setCallState(data.state);
-      break;
+## 8. Frontend Constraints and Extension Points
 
-    case "agent_thinking":
-      setThinking(true);
-      break;
-  }
-};
-```
-
-
-## 7.3 Cleanup
-
-```ts
-ws.close();
-```
-
-
-## 8. 🔁 State Management
-
-
-## 8.1 Global State
-
-```ts
-{
-  user,
-  token,
-  currentCall,
-  callState,
-  messages
-}
-```
-
-
-## 8.2 Server State (React Query)
-
-* call history
-* settings
-* contacts
-
-
-## 9. 📡 API Integration Layer
-
-
-## 9.1 Example
-
-```ts
-const startCall = async (data) => {
-  return fetch("/calls/outbound", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data),
-  });
-};
-```
-
-
-## 10. 🎯 UX Enhancements (Important)
-
-
-## 10.1 Status Indicator
-
-```text
-🟢 Listening
-🟡 Thinking
-🔵 Speaking
-```
-
-
-## 10.2 Typing Indicator
-
-```text
-Agent is thinking...
-```
-
-
-## 10.3 Call Timer
-
-```text
-00:01:23
-```
-
-
-## 10.4 Error Display
-
-```text
-Connection lost. Reconnecting...
-```
-
-
-## 11. 📊 Call History UI
-
-
-## 11.1 List
-
-```text
-+65 XXX → Completed
-+65 XXX → Missed
-```
-
-
-## 11.2 Detail View
-
-* transcript
-* recording playback (from Twilio)
-
-
-## 12. 🔐 Authentication Flow
-
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant Backend
-
-    User->>UI: Login
-    UI->>Backend: POST /auth/login
-    Backend->>UI: JWT
-    UI->>UI: Store token
-```
-
-
-## 13. 🚀 Performance Considerations
-
-
-* debounce UI updates
-* batch state updates
-* avoid unnecessary re-renders
-
-
-## 14. 🔮 Future Enhancements
-
-
-* audio playback (optional)
-* analytics dashboard
-* multi-agent management
-* dark mode
-
-
-## 15. ✅ Summary
-
-The frontend system:
-
-* provides real-time call monitoring
-* streams live transcripts via WebSocket
-* manages agent configuration
-* delivers clean, intuitive UX
-
-
-# 🚀 FINAL STEP
-
-👉 [**Sequence & Interaction Design**](./7__Sequence-Interaction-Design.md)
-
-* shows full system flow
-* ties everything together
+- Auth is still browser-local and intentionally simple for the MVP.
+- Account pages are currently read-mostly shells, but the routes and navigation state are already in place for future expansion.
+- Billing is simulated on the subscription page.
+- Inbound-call-specific UI is not yet implemented in the current frontend; the shipped phone UX is focused on monitored outbound calls and transcript observation.
 

@@ -3,9 +3,104 @@
 This backend is built with **FastAPI** and follows a **layered, modular architecture** designed for:
 
 * real-time voice processing
-* multi-tenant scalability
+* user-scoped data ownership
 * clean separation of concerns
 * production-readiness
+
+
+## 🛠️ Local Development
+
+This backend is managed with **uv**.
+
+### Install dependencies
+
+```bash
+uv sync
+```
+
+### Run the API
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+### Environment
+
+Copy `.env.example` to `.env` and adjust values as needed.
+
+```bash
+cp .env.example .env
+```
+
+Default local PostgreSQL configuration in this repo:
+
+```env
+DATABASE_URL=postgresql+psycopg://postgres:8811@localhost:5432/sagent
+```
+
+This assumes:
+
+* host: `localhost`
+* port: `5432`
+* user: `postgres`
+* password: `8811`
+* database: `sagent`
+
+Create the database before starting the API if it does not already exist.
+
+Default demo login seeded by the app:
+
+```text
+admin@sagent.local
+password123
+```
+
+The demo account uses a `.local` address. Keep `AUTH_ALLOW_TEST_EMAIL_DOMAINS=true` for local/demo environments, and set it to `false` in production if you want to reject reserved test domains.
+
+You can also create a new operator account through the frontend or `POST /v1/auth/signup`.
+
+New operator signups now require email verification before sign-in succeeds.
+
+Email delivery configuration:
+
+```env
+FRONTEND_APP_URL=http://localhost:3000
+EMAIL_VERIFICATION_EXPIRE_HOURS=24
+GOOGLE_OAUTH_CLIENT_ID=
+AVATAR_MAX_BYTES=5242880
+AVATAR_IMAGE_SIZE=512
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_AVATAR_FOLDER=sagent/avatars
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_USE_TLS=true
+SMTP_USE_SSL=false
+SMTP_FROM_EMAIL=no-reply@sagent.local
+```
+
+If `SMTP_HOST` is not configured, the backend logs the verification URL instead. That keeps local development unblocked while still exercising the same verification flow.
+
+Google auth configuration:
+
+- Set `GOOGLE_OAUTH_CLIENT_ID` to the same Google Web client ID used by the frontend Google Identity Services button.
+- `POST /v1/auth/google/signin` signs an existing account in with a verified Google ID token.
+- `POST /v1/auth/google/signup` creates a new operator account from a verified Google ID token and signs the user in immediately.
+- If a user verifies the same email with Google later, the backend marks the existing pending email verification as complete.
+
+Profile avatars are normalized with Pillow and stored on Cloudinary.
+The backend crops avatars to a square `AVATAR_IMAGE_SIZE x AVATAR_IMAGE_SIZE` image, corrects EXIF orientation, preserves transparency when present, and overwrites the same Cloudinary public ID per user so avatar changes are atomic from the application perspective.
+
+Required avatar runtime dependencies:
+
+```bash
+uv sync
+```
+
+That installs the Cloudinary SDK and Pillow declared in `pyproject.toml`.
 
 
 ## 🏗️ High-Level Architecture
@@ -102,6 +197,22 @@ api/
 * Define HTTP endpoints
 * Validate requests (via schemas)
 * Enforce authentication
+
+**Current auth endpoints:**
+
+* `POST /v1/auth/login` → email/password sign-in
+* `POST /v1/auth/signup` → account creation + verification email dispatch
+* `POST /v1/auth/google/signin` → Google ID-token sign-in for an existing account
+* `POST /v1/auth/google/signup` → account creation from a Google identity
+* `POST /v1/auth/verify-email` → completes email verification from a token
+* `POST /v1/auth/resend-verification` → issues a fresh verification email
+* `POST /v1/auth/forgot-password` → sends a password reset link when the account supports password sign-in
+* `POST /v1/auth/reset-password` → sets a new password from a valid reset token
+* `POST /v1/auth/avatar` → uploads or replaces the current operator avatar
+* `DELETE /v1/auth/avatar` → removes the current operator avatar
+* `GET /v1/auth/preferences` → fetches persisted operator preferences
+* `PUT /v1/auth/preferences` → updates persisted operator preferences
+* `GET /v1/auth/me` → current authenticated operator profile
 
 **Important Rule:**
 
