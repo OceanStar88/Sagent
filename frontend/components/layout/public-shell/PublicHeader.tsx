@@ -19,7 +19,7 @@ export function PublicHeader() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-[120] border-b border-slate-900/10 bg-[rgba(236,239,243,0.82)] shadow-[0_14px_38px_rgba(15,23,42,0.08)] backdrop-blur-[18px] dark:border-white/10 dark:bg-[rgba(24,28,34,0.78)] dark:shadow-[0_18px_48px_rgba(0,0,0,0.28)]">
-      <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6">
+      <div className="mx-auto flex w-full items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3">
           <span className="inline-flex size-11 items-center justify-center overflow-hidden p-1.5">
             <Image src={logo} alt="Sagent logo" className="size-full object-contain" priority />

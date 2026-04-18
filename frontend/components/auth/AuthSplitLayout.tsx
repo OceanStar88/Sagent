@@ -25,8 +25,8 @@ export function AuthSplitLayout({
   children,
 }: AuthSplitLayoutProps) {
   return (
-    <PublicShell contentClassName="px-0 pb-0 pt-[4.75rem] sm:px-0 sm:pb-0 sm:pt-[4.75rem] lg:pt-[5.25rem]">
-      <div className="mx-auto grid min-h-[calc(100svh-4.75rem)] w-full max-w-none overflow-hidden border-y border-slate-900/10 bg-[rgba(244,246,248,0.88)] shadow-[0_20px_54px_rgba(15,23,42,0.10)] backdrop-blur-[18px] lg:min-h-[calc(100svh-5.25rem)] lg:max-w-[1600px] lg:rounded-[1.25rem] lg:border dark:border-white/10 dark:bg-[rgba(54,59,68,0.88)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)] lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
+    <PublicShell contentClassName="px-0 pb-0">
+      <div className="mx-auto grid min-h-[calc(100svh-4.25rem)] w-full max-w-none overflow-hidden border-y border-slate-900/10 bg-[rgba(244,246,248,0.88)] shadow-[0_20px_54px_rgba(15,23,42,0.10)] backdrop-blur-[18px] lg:rounded-none lg:border dark:border-white/10 dark:bg-[rgba(54,59,68,0.88)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)] lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
         <section className="relative hidden flex-col justify-between overflow-hidden border-r border-slate-900/10 bg-[radial-gradient(circle_at_top_left,rgba(10,132,208,0.2),transparent_32%),linear-gradient(155deg,#0f172a_0%,#0b3c63_48%,#0f7bc2_100%)] p-8 text-white lg:flex dark:border-white/10">
           {/* <div className="relative z-10 flex items-center justify-between gap-4">
             <Link href="/" className="inline-flex items-center gap-3">
