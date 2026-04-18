@@ -74,22 +74,22 @@ Sign out
 ```
 
 ### Panel Responsibilities
-| Panel         | Purpose |
-| ---           | --- |
-| Sidebar       | App-level navigation |
+| Panel         | Purpose                                 |
+| ---           | ---                                     |
+| Sidebar       | App-level navigation                    |
 | Main List     | Primary entities (agents, leads, calls) |
-| Sub List      | Secondary entities or tabs |
+| Sub List      | Secondary entities or tabs              |
 | Details Panel | Full detail, transcript, forms, actions |
 
 ### Responsive Behavior
 - Desktop: full four-panel layout.
-- Tablet: three-panel layout; details panel overlays or docks based on available width.
+- Tablet: two-panel layout.
 - Mobile: stacked navigation flow from list to detail.
 
 ```txt
-Desktop: Sidebar | Main List | Sub List | Details
-Tablet:  Main List | Sub List -> Details
-Mobile:  Main List -> Sub List -> Details
+Desktop: [Sidebar | Main List | Sub List | Details]
+Tablet:  [Main List | Sub List] -> [Details]
+Mobile:  [Main List] -> [Sub List] -> [Details]
 ```
 
 ## 5. Home Page

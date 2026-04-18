@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCurrentNavItem } from "@/contexts/NavContext";
+import { usePanelPath } from "@/contexts/PanelPathContext";
 import { ledeClass, pageStackClass, sectionTitleClass, triPanelClass, triPanelLayoutClass } from "@/lib/ui";
 import { AvatarUploadDetail } from "@/components/account/AvatarUploadDetail";
 import { NameEditDetail } from "@/components/account/NameEditDetail";
@@ -184,6 +186,7 @@ function fallbackSubId(mainId: string) {
 export function AccountPageContent({ initialMainId }: { initialMainId: string }) {
   const pathname = usePathname();
   const currentNavItem = useCurrentNavItem();
+  const { setPanelPath } = usePanelPath();
   const routePageId = pathname?.replace("/", "") || initialMainId;
   const accountPageId = SECTION_ITEMS[routePageId] ? routePageId : initialMainId;
   const initialSectionId = fallbackMainId(accountPageId);
@@ -191,6 +194,9 @@ export function AccountPageContent({ initialMainId }: { initialMainId: string })
 
   const [mainSelected, setMainSelected] = useState<string>(initialSectionId);
   const [subSelected, setSubSelected] = useState<string>(initialSubId);
+  const [tabletStep, setTabletStep] = useState<"lists" | "detail">("lists");
+  const [mobileStep, setMobileStep] = useState<"main" | "sub" | "detail">("main");
+  const [viewport, setViewport] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
   const mainItems = useMemo(() => SECTION_ITEMS[accountPageId] ?? [], [accountPageId]);
 
@@ -204,9 +210,103 @@ export function AccountPageContent({ initialMainId }: { initialMainId: string })
   const subPanelHeader = currentMain?.label ?? "Sub Section";
   const detailPanelHeader = currentSub?.label ?? "Detail";
 
+  useEffect(() => {
+    const mediaDesktop = window.matchMedia("(min-width: 1024px)");
+    const mediaTablet = window.matchMedia("(min-width: 768px)");
+
+    const syncViewport = () => {
+      if (mediaDesktop.matches) {
+        setViewport("desktop");
+        return;
+      }
+      if (mediaTablet.matches) {
+        setViewport("tablet");
+        return;
+      }
+      setViewport("mobile");
+    };
+
+    syncViewport();
+    mediaDesktop.addEventListener("change", syncViewport);
+    mediaTablet.addEventListener("change", syncViewport);
+    return () => {
+      mediaDesktop.removeEventListener("change", syncViewport);
+      mediaTablet.removeEventListener("change", syncViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mainName = currentMain?.label ?? subPanelHeader;
+    const subName = currentSub?.label ?? detailPanelHeader;
+
+    if (viewport === "desktop") {
+      setPanelPath({
+        headerLabel: `${mainPanelHeader} > ${mainName}`,
+        titleLabel: `${subName} | ${mainName} | ${mainPanelHeader} | Sagent`,
+      });
+      return;
+    }
+
+    if (viewport === "tablet") {
+      if (tabletStep === "detail") {
+        setPanelPath({
+          headerLabel: `${mainPanelHeader} > ${mainName}`,
+          titleLabel: `${subName} | ${mainName} | ${mainPanelHeader} | Sagent`,
+        });
+        return;
+      }
+
+      setPanelPath({
+        headerLabel: mainPanelHeader,
+        titleLabel: `${mainName} | ${mainPanelHeader} | Sagent`,
+      });
+      return;
+    }
+
+    if (mobileStep === "detail") {
+      setPanelPath({
+        headerLabel: `${mainPanelHeader} > ${mainName}`,
+        titleLabel: `${subName} | ${mainName} | ${mainPanelHeader} | Sagent`,
+      });
+      return;
+    }
+
+    if (mobileStep === "sub") {
+      setPanelPath({
+        headerLabel: mainPanelHeader,
+        titleLabel: `${mainName} | ${mainPanelHeader} | Sagent`,
+      });
+      return;
+    }
+
+    setPanelPath({
+      headerLabel: mainPanelHeader,
+      titleLabel: `${mainPanelHeader} | Sagent`,
+    });
+  }, [currentMain?.label, currentSub?.label, detailPanelHeader, mainPanelHeader, mobileStep, setPanelPath, subPanelHeader, tabletStep, viewport]);
+
+  useEffect(() => {
+    return () => {
+      setPanelPath(null);
+    };
+  }, [setPanelPath]);
+
+  function handleMainSelect(itemId: string) {
+    setMainSelected(itemId);
+    setSubSelected(fallbackSubId(itemId));
+    setTabletStep("lists");
+    setMobileStep("sub");
+  }
+
+  function handleSubSelect(itemId: string) {
+    setSubSelected(itemId);
+    setTabletStep("detail");
+    setMobileStep("detail");
+  }
+
   return (
     <div className={pageStackClass}>
-      <div className={triPanelLayoutClass}>
+      <div className={`${triPanelLayoutClass} hidden lg:grid`}>
         <article className={triPanelClass}>
           <div className="mb-4 flex items-center gap-2.5">
             {currentNavItem?.renderIcon ? (
@@ -219,10 +319,7 @@ export function AccountPageContent({ initialMainId }: { initialMainId: string })
               <button
                 key={item.id}
                 type="button"
-                onClick={() => {
-                  setMainSelected(item.id);
-                  setSubSelected(fallbackSubId(item.id));
-                }}
+                onClick={() => handleMainSelect(item.id)}
                 className={
                   mainSelected === item.id
                     ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
@@ -243,7 +340,7 @@ export function AccountPageContent({ initialMainId }: { initialMainId: string })
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setSubSelected(item.id)}
+                onClick={() => handleSubSelect(item.id)}
                 className={
                   subSelected === item.id
                     ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
@@ -265,6 +362,151 @@ export function AccountPageContent({ initialMainId }: { initialMainId: string })
             <p className={ledeClass}>Select a section to view details.</p>
           )}
         </article>
+      </div>
+
+      <div className="hidden md:grid lg:hidden">
+        {tabletStep === "lists" ? (
+          <div className="grid grid-cols-2 gap-0">
+            <article className={triPanelClass}>
+              <div className="mb-4 flex items-center gap-2.5">
+                {currentNavItem?.renderIcon ? (
+                  <div className="size-5 flex-shrink-0 text-indigo-600 dark:text-indigo-400">{currentNavItem.renderIcon()}</div>
+                ) : null}
+                <h2 className={sectionTitleClass}>{mainPanelHeader}</h2>
+              </div>
+              <div className="flex min-h-0 flex-col gap-2 overflow-y-auto">
+                {mainItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleMainSelect(item.id)}
+                    className={
+                      mainSelected === item.id
+                        ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
+                        : "rounded-none border border-transparent px-3 py-2 text-left hover:bg-slate-200/55 dark:hover:bg-slate-700/45"
+                    }
+                  >
+                    <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{item.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.summary}</p>
+                  </button>
+                ))}
+              </div>
+            </article>
+
+            <article className={triPanelClass}>
+              <h2 className={sectionTitleClass}>{subPanelHeader}</h2>
+              <div className="flex min-h-0 flex-col gap-2 overflow-y-auto">
+                {subItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleSubSelect(item.id)}
+                    className={
+                      subSelected === item.id
+                        ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
+                        : "rounded-none border border-transparent px-3 py-2 text-left hover:bg-slate-200/55 dark:hover:bg-slate-700/45"
+                    }
+                  >
+                    <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{item.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
+                  </button>
+                ))}
+              </div>
+            </article>
+          </div>
+        ) : (
+          <article className={triPanelClass}>
+            <div className="mb-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTabletStep("lists")}
+                className="rounded-none border border-slate-900/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 dark:border-white/10 dark:text-slate-200"
+              >
+                Back
+              </button>
+              <h2 className={sectionTitleClass}>{detailPanelHeader}</h2>
+            </div>
+            {currentSub ? <DetailPanel actionId={currentSub.id} /> : <p className={ledeClass}>Select a section to view details.</p>}
+          </article>
+        )}
+      </div>
+
+      <div className="md:hidden">
+        {mobileStep === "main" ? (
+          <article className={triPanelClass}>
+            <div className="mb-4 flex items-center gap-2.5">
+              {currentNavItem?.renderIcon ? (
+                <div className="size-5 flex-shrink-0 text-indigo-600 dark:text-indigo-400">{currentNavItem.renderIcon()}</div>
+              ) : null}
+              <h2 className={sectionTitleClass}>{mainPanelHeader}</h2>
+            </div>
+            <div className="flex min-h-0 flex-col gap-2 overflow-y-auto">
+              {mainItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleMainSelect(item.id)}
+                  className={
+                    mainSelected === item.id
+                      ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
+                      : "rounded-none border border-transparent px-3 py-2 text-left hover:bg-slate-200/55 dark:hover:bg-slate-700/45"
+                  }
+                >
+                  <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{item.label}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{item.summary}</p>
+                </button>
+              ))}
+            </div>
+          </article>
+        ) : null}
+
+        {mobileStep === "sub" ? (
+          <article className={triPanelClass}>
+            <div className="mb-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileStep("main")}
+                className="rounded-none border border-slate-900/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 dark:border-white/10 dark:text-slate-200"
+              >
+                Back
+              </button>
+              <h2 className={sectionTitleClass}>{subPanelHeader}</h2>
+            </div>
+            <div className="flex min-h-0 flex-col gap-2 overflow-y-auto">
+              {subItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSubSelect(item.id)}
+                  className={
+                    subSelected === item.id
+                      ? "rounded-none border border-indigo-600/30 bg-indigo-500/14 px-3 py-2 text-left"
+                      : "rounded-none border border-transparent px-3 py-2 text-left hover:bg-slate-200/55 dark:hover:bg-slate-700/45"
+                  }
+                >
+                  <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{item.label}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
+                </button>
+              ))}
+            </div>
+          </article>
+        ) : null}
+
+        {mobileStep === "detail" ? (
+          <article className={triPanelClass}>
+            <div className="mb-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileStep("sub")}
+                className="rounded-none border border-slate-900/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 dark:border-white/10 dark:text-slate-200"
+              >
+                Back
+              </button>
+              <h2 className={sectionTitleClass}>{detailPanelHeader}</h2>
+            </div>
+            {currentSub ? <DetailPanel actionId={currentSub.id} /> : <p className={ledeClass}>Select a section to view details.</p>}
+          </article>
+        ) : null}
       </div>
     </div>
   );

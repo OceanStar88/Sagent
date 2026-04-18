@@ -11,6 +11,7 @@ import { BrandMark } from "@/components/layout/app-shell/BrandMark";
 import { ACCOUNT_ITEMS, NAV_ITEMS } from "@/components/layout/app-shell/nav";
 import { NavIcon } from "@/components/layout/app-shell/NavIcon";
 import { NavProvider } from "@/contexts/NavContext";
+import { PanelPathProvider, type PanelPathState } from "@/contexts/PanelPathContext";
 import {
   accountAvatarClass,
   mobileHeaderHeightClass,
@@ -44,6 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [isMobileNavMounted, setIsMobileNavMounted] = useState(false);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [panelPath, setPanelPath] = useState<PanelPathState | null>(null);
 
   // Sync the UI theme with the persisted user or local preference layer.
   useThemePreference();
@@ -55,6 +57,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ??
     ACCOUNT_ITEMS.find((item) => pathname === item.href)?.label ??
     "Account";
+  const headerLabel = panelPath?.headerLabel ?? activePageLabel;
+  const pageTitle = panelPath?.titleLabel ?? `${activePageLabel} | Sagent`;
 
   // Derive the current sidebar navigation item to provide to child pages.
   const currentNavItem =
@@ -189,13 +193,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Reflect the active route in the document title for browser tabs and history entries.
   useEffect(() => {
-    document.title = `${activePageLabel} | Sagent`;
-  }, [activePageLabel]);
+    document.title = pageTitle;
+  }, [pageTitle]);
 
   // Route changes always collapse mobile overlays, while desktop account pages keep their menu expanded.
   useEffect(() => {
     closeMobileNav();
     closeMobileAccountMenu();
+    setPanelPath(null);
     // Account routes keep the desktop account menu visible after navigation.
     if (isAnyAccountRoute(pathname)) {
       setIsAccountMenuOpen(true);
@@ -309,7 +314,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <BrandMark bordered />
         </button>
         <div className="min-w-0 text-center" aria-live="polite">
-          <strong className="block truncate text-base text-slate-900 dark:text-zinc-100">{activePageLabel}</strong>
+          <strong className="block truncate text-base text-slate-900 dark:text-zinc-100">{headerLabel}</strong>
         </div>
         <div className="relative shrink-0">
           <button
@@ -508,7 +513,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col lg:overflow-hidden lg:h-[100svh] lg:flex lg:bg-[rgba(209,213,219,0.94)] lg:pt-3 lg:pb-3 lg:pr-3 dark:lg:bg-[rgba(31,41,55,0.95)]">
           {/* Children are stretched so each page can own the full available shell height. */}
           <NavProvider currentNavItem={currentNavItem}>
-            <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto [&>*]:flex [&>*]:min-h-0 [&>*]:flex-1 [&>*]:flex-col">{children}</div>
+            <PanelPathProvider panelPath={panelPath} setPanelPath={setPanelPath}>
+              <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto [&>*]:flex [&>*]:min-h-0 [&>*]:flex-1 [&>*]:flex-col">{children}</div>
+            </PanelPathProvider>
           </NavProvider>
         </main>
       </div>
