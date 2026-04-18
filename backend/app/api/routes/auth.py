@@ -34,11 +34,13 @@ from app.repositories.auth_repository import (
     set_email_verification_pending,
     set_email_verification_verified,
     set_password_reset_pending,
+    update_user_profile,
     update_user_theme_preference,
     upsert_user_avatar,
 )
 from app.schemas.auth import (
     AuthUser,
+    ChangePasswordRequest,
     GoogleSigninRequest,
     GoogleSignupRequest,
     LoginRequest,
@@ -48,6 +50,7 @@ from app.schemas.auth import (
     SignupRequest,
     SignupResponse,
     TokenResponse,
+    UpdateProfileRequest,
     UserPreferencesPayload,
     VerificationEmailRequest,
     VerificationTokenRequest,
@@ -129,13 +132,17 @@ def build_token_response(
 
 def build_user_token_response(db: DbSession, *, user) -> TokenResponse:
     user_profile = get_user_profile(db, user.id)
+    avatar = get_user_avatar(db, user.id)
     return build_token_response(
         user_id=user.id,
         email=user.email,
         first_name=user_profile.first_name if user_profile is not None else None,
         last_name=user_profile.last_name if user_profile is not None else None,
         email_verified=is_user_email_verified(db, user),
-        avatar_url=avatar_public_url(getattr(get_user_avatar(db, user.id), "storage_key", None)),
+        avatar_url=avatar_public_url(
+            getattr(avatar, "storage_key", None),
+            updated_at=getattr(avatar, "updated_at", None),
+        ),
         theme_preference=resolve_theme_preference(db, user.id),
     )
 
@@ -412,9 +419,57 @@ def get_me(current_user: CurrentUser, db: DbSession) -> AuthUser:
         first_name=user_profile.first_name if user_profile is not None else None,
         last_name=user_profile.last_name if user_profile is not None else None,
         email_verified=is_user_email_verified(db, current_user),
-        avatar_url=avatar_public_url(avatar.storage_key if avatar else None),
+        avatar_url=avatar_public_url(
+            avatar.storage_key if avatar else None,
+            updated_at=avatar.updated_at if avatar else None,
+        ),
         theme_preference=resolve_theme_preference(db, current_user.id),
     )
+
+
+@router.patch("/profile", response_model=AuthUser)
+def update_profile(payload: UpdateProfileRequest, current_user: CurrentUser, db: DbSession) -> AuthUser:
+    parts = payload.display_name.split(None, 1)
+    first_name = parts[0]
+    last_name = parts[1] if len(parts) > 1 else ""
+
+    update_user_profile(db, user_id=current_user.id, first_name=first_name, last_name=last_name)
+    db.commit()
+
+    avatar = get_user_avatar(db, current_user.id)
+    return build_auth_user(
+        email=current_user.email,
+        first_name=first_name,
+        last_name=last_name or None,
+        email_verified=is_user_email_verified(db, current_user),
+        avatar_url=avatar_public_url(
+            avatar.storage_key if avatar else None,
+            updated_at=avatar.updated_at if avatar else None,
+        ),
+        theme_preference=resolve_theme_preference(db, current_user.id),
+    )
+
+
+@router.post("/change-password", response_model=MessageResponse)
+def change_password(payload: ChangePasswordRequest, current_user: CurrentUser, db: DbSession) -> MessageResponse:
+    if is_google_oauth_password_hash(current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password change is not available for Google sign-in accounts.",
+        )
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must differ from current password.",
+        )
+    current_user.password_hash = get_password_hash(payload.new_password)
+    db.commit()
+    return MessageResponse(message="Password updated successfully.")
 
 
 @router.post("/avatar", response_model=AuthUser)
@@ -449,7 +504,7 @@ async def upload_avatar(*, file: UploadFile = File(...), current_user: CurrentUs
         first_name=user_profile.first_name if user_profile is not None else None,
         last_name=user_profile.last_name if user_profile is not None else None,
         email_verified=is_user_email_verified(db, current_user),
-        avatar_url=avatar_public_url(avatar.storage_key),
+        avatar_url=avatar_public_url(avatar.storage_key, updated_at=avatar.updated_at),
         theme_preference=resolve_theme_preference(db, current_user.id),
     )
 

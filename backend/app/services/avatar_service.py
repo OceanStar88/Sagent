@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from importlib import import_module
 from io import BytesIO
+from datetime import datetime
 
 from fastapi import UploadFile
 
@@ -23,7 +24,7 @@ ALLOWED_IMAGE_FORMATS = {
 }
 
 
-def avatar_public_url(storage_key: str | None) -> str | None:
+def avatar_public_url(storage_key: str | None, *, updated_at: datetime | None = None) -> str | None:
     if not storage_key:
         return None
 
@@ -36,7 +37,7 @@ def avatar_public_url(storage_key: str | None) -> str | None:
     )
 
     CloudinaryImage = import_module("cloudinary").CloudinaryImage
-    return CloudinaryImage(storage_key).build_url(
+    base_url = CloudinaryImage(storage_key).build_url(
         secure=True,
         fetch_format="auto",
         quality="auto",
@@ -45,6 +46,13 @@ def avatar_public_url(storage_key: str | None) -> str | None:
         width=get_settings().avatar_image_size,
         height=get_settings().avatar_image_size,
     )
+
+    if updated_at is None:
+        return base_url
+
+    version = updated_at.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    delimiter = "&" if "?" in base_url else "?"
+    return f"{base_url}{delimiter}v={version}"
 
 
 async def store_avatar_upload(file: UploadFile, *, user_id) -> tuple[str, str, str, int]:

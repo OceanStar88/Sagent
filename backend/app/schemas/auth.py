@@ -187,3 +187,25 @@ class UserPreferencesPayload(BaseModel):
         if normalized not in {"light", "dark", "system"}:
             raise ValueError("Theme preference must be one of: light, dark, system")
         return normalized
+
+
+class UpdateProfileRequest(BaseModel):
+    display_name: str = Field(min_length=1, max_length=160)
+
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Display name cannot be blank")
+        return stripped
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=255)
+    new_password: str = Field(min_length=10, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, value: str) -> str:
+        return validate_password_strength(value)

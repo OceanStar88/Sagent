@@ -2,11 +2,10 @@ export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-const panelBaseClass = "rounded-none border border-slate-900/10 bg-[rgba(244,246,248,0.9)] shadow-[0_20px_54px_rgba(15,23,42,0.10)] backdrop-blur-[18px] dark:border-white/10 dark:bg-[rgba(54,59,68,0.9)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)]";
+export const pageStackClass = "flex min-h-0 w-full flex-1 flex-col gap-6";
 
-export const pageStackClass = "flex flex-col gap-6";
-export const panelClass = `${panelBaseClass} flex flex-col gap-5 p-5 sm:p-6`;
-export const heroPanelClass = `${panelBaseClass} flex flex-col gap-5 bg-[linear-gradient(180deg,rgba(247,249,251,0.98),rgba(244,246,248,0.9))] p-5 sm:p-6 dark:bg-[linear-gradient(180deg,rgba(66,72,82,0.96),rgba(54,59,68,0.9))]`;
+const panelBaseClass = "rounded-none border border-slate-900/10 bg-[rgba(244,246,248,0.9)] backdrop-blur-[18px] dark:border-white/10 dark:bg-[rgba(54,59,68,0.9)]"
+export const panelClass = `${panelBaseClass} flex min-h-0 w-full flex-1 flex-col gap-5 p-5 sm:p-6`;
 export const nestedPanelClass = `${panelBaseClass} flex flex-col gap-5 p-5`;
 export const compactPanelClass = `${panelBaseClass} p-4`;
 
@@ -35,6 +34,8 @@ export const statCardClass = `${compactPanelClass} flex flex-col gap-2`;
 export const statValueClass = "text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-zinc-100";
 
 export const splitGridClass = "grid gap-4 xl:grid-cols-2";
+export const triPanelLayoutClass = "grid min-h-0 flex-1 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)_minmax(0,1.18fr)]";
+export const triPanelClass = `${panelBaseClass} flex min-h-0 flex-col p-4`;
 export const settingsGridClass = "grid gap-4";
 export const callLayoutClass = "grid gap-4 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:items-start";
 export const contactGridClass = "grid gap-3 sm:grid-cols-2";
@@ -109,7 +110,7 @@ export function themeOptionClass(active: boolean) {
   return cn(
     "flex h-full flex-col gap-4 rounded-none border px-4 py-4 text-left transition duration-150",
     active
-      ? "border-indigo-600/30 bg-[linear-gradient(135deg,rgba(0,120,212,0.12),transparent_70%),rgba(225,231,239,0.96)] shadow-[0_0_0_1px_rgba(0,120,212,0.14)] dark:border-indigo-400/30 dark:bg-[linear-gradient(135deg,rgba(55,148,255,0.12),transparent_70%),rgba(74,81,94,0.94)] dark:shadow-[0_0_0_1px_rgba(55,148,255,0.16)]"
+      ? "border-indigo-600/30 bg-[linear-gradient(135deg,rgba(0,120,212,0.12),transparent_70%),rgba(225,231,239,0.96)] dark:border-indigo-400/30 dark:bg-[linear-gradient(135deg,rgba(55,148,255,0.12),transparent_70%),rgba(74,81,94,0.94)]"
       : "border-slate-900/10 bg-slate-200/70 hover:border-indigo-600/16 hover:bg-slate-200 dark:border-white/10 dark:bg-slate-700/55 dark:hover:border-indigo-400/16 dark:hover:bg-slate-700",
   );
 }

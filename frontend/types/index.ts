@@ -15,6 +15,15 @@ export type UserPreferencesPayload = {
   theme_preference: ThemePreference;
 };
 
+export type UpdateProfilePayload = {
+  display_name: string;
+};
+
+export type ChangePasswordPayload = {
+  current_password: string;
+  new_password: string;
+};
+
 export type TokenResponse = {
   access_token: string;
   token_type: string;

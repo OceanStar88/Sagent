@@ -1,4 +1,4 @@
-import type { AuthUser, CallDetail, CallSummary, Contact, MessageResponse, SettingsPayload, SignupResponse, TokenResponse, UserPreferencesPayload } from "@/types";
+import type { AuthUser, CallDetail, CallSummary, ChangePasswordPayload, Contact, MessageResponse, SettingsPayload, SignupResponse, TokenResponse, UpdateProfilePayload, UserPreferencesPayload } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/v1";
 
@@ -162,6 +162,22 @@ export function getUserPreferences(token: string): Promise<UserPreferencesPayloa
 export function updateUserPreferences(token: string, payload: UserPreferencesPayload): Promise<UserPreferencesPayload> {
   return apiRequest<UserPreferencesPayload>("/auth/preferences", {
     method: "PUT",
+    token,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateProfile(token: string, payload: UpdateProfilePayload): Promise<AuthUser> {
+  return apiRequest<AuthUser>("/auth/profile", {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(token: string, payload: ChangePasswordPayload): Promise<MessageResponse> {
+  return apiRequest<MessageResponse>("/auth/change-password", {
+    method: "POST",
     token,
     body: JSON.stringify(payload),
   });

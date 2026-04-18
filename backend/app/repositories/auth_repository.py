@@ -209,3 +209,15 @@ def create_user_profile(db: Session, *, user_id, first_name: str, last_name: str
     db.add(profile)
     db.flush()
     return profile
+
+
+def update_user_profile(db: Session, *, user_id, first_name: str, last_name: str) -> UserProfile:
+    profile = get_user_profile(db, user_id)
+    if profile is None:
+        profile = UserProfile(user_id=user_id, first_name=first_name, last_name=last_name)
+        db.add(profile)
+    else:
+        profile.first_name = first_name
+        profile.last_name = last_name
+    db.flush()
+    return profile

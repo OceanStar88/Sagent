@@ -2,10 +2,10 @@ import { cn } from "@/lib/ui";
 
 export const mobileHeaderHeightClass = "h-16";
 
-export const shellSurfaceClass = "border border-slate-900/10 bg-[rgba(209,213,219,0.94)] text-[#252526] shadow-[0_20px_54px_rgba(15,23,42,0.10)] dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)] dark:text-[#cccccc] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)]";
-export const shellElevatedClass = "border border-slate-900/10 bg-[rgba(221,225,231,0.96)] text-[#252526] shadow-[0_20px_54px_rgba(15,23,42,0.10)] dark:border-white/12 dark:bg-[rgba(38,49,64,0.98)] dark:text-[#cccccc] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)]";
+export const shellSurfaceClass = "border border-slate-900/10 bg-[rgba(209,213,219,0.94)] text-[#252526] dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)] dark:text-[#cccccc]";
+export const shellElevatedClass = "border border-slate-900/10 bg-[rgba(221,225,231,0.96)] text-[#252526] dark:border-white/12 dark:bg-[rgba(38,49,64,0.98)] dark:text-[#cccccc]";
 export const shellControlClass = "inline-flex items-center justify-center rounded-none border border-slate-900/10 bg-[rgba(221,225,231,0.68)] text-[#252526] transition duration-150 hover:-translate-y-px hover:border-indigo-600/20 hover:bg-indigo-500/8 dark:border-white/12 dark:bg-[rgba(38,49,64,0.68)] dark:text-[#cccccc] dark:hover:border-indigo-400/20 dark:hover:bg-indigo-400/10";
-export const accountAvatarClass = "inline-flex size-[40px] items-center justify-center rounded-none border border-indigo-600/20 bg-[radial-gradient(circle_at_30%_28%,rgba(255,255,255,0.22),transparent_48%),linear-gradient(145deg,#0078d4,#0a84d0_42%,#005a9e)] text-sm font-bold tracking-[0.01em] text-[#f8fbff] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_18px_rgba(0,120,212,0.18)] dark:border-indigo-400/25 dark:bg-[radial-gradient(circle_at_30%_28%,rgba(255,255,255,0.18),transparent_48%),linear-gradient(145deg,#3794ff,#4fc1ff_42%,#78b7ff)] dark:text-slate-950 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_8px_18px_rgba(55,148,255,0.2)]";
+export const accountAvatarClass = "inline-flex size-[40px] items-center justify-center rounded-none border border-indigo-600/20 bg-transparent text-sm font-bold tracking-[0.01em] text-indigo-700 dark:border-indigo-400/25 dark:bg-transparent dark:text-indigo-300";
 
 export function accountMenuItemClass(active: boolean, danger = false) {
   if (danger) {

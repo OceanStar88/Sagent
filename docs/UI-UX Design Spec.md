@@ -46,8 +46,9 @@ User Context (global)
 
 ### Sidebar Behavior
 ```txt
-[ Product Logo ] -> Home
+[ Product Logo ]
 
+Home
 Agents
 Leads
 Calls

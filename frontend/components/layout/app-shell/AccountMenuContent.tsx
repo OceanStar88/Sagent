@@ -42,7 +42,7 @@ export function AccountMenuContent({
           aria-label={item.label}
           onClick={() => onNavigate(item.href)}
         >
-          <span className="inline-flex size-[24px] items-center justify-center">{item.icon}</span>
+          <span className="inline-flex size-[24px] items-center justify-center">{item.renderIcon()}</span>
           <span className={itemLabelClass}>{item.label}</span>
         </Link>
       ))}

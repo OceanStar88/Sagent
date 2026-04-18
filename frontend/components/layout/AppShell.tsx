@@ -10,6 +10,7 @@ import { AccountMenuContent } from "@/components/layout/app-shell/AccountMenuCon
 import { BrandMark } from "@/components/layout/app-shell/BrandMark";
 import { ACCOUNT_ITEMS, NAV_ITEMS } from "@/components/layout/app-shell/nav";
 import { NavIcon } from "@/components/layout/app-shell/NavIcon";
+import { NavProvider } from "@/contexts/NavContext";
 import {
   accountAvatarClass,
   mobileHeaderHeightClass,
@@ -50,7 +51,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Derive compact account presentation values for the shell controls.
   const accountInitial = authUser?.display_name?.charAt(0).toUpperCase() || "A";
   const accountAvatarUrl = authUser?.avatar_url ?? null;
-  const activePageLabel = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ?? "Home";
+  const activePageLabel =
+    NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ??
+    ACCOUNT_ITEMS.find((item) => pathname === item.href)?.label ??
+    "Account";
+
+  // Derive the current sidebar navigation item to provide to child pages.
+  const currentNavItem =
+    NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ??
+    ACCOUNT_ITEMS.find((item) => pathname === item.href) ??
+    null;
 
   // Clear any pending delayed unmount for the mobile navigation rail.
   function clearMobileNavCloseTimeout() {
@@ -282,7 +292,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen pb-0 lg:py-0">
+    <div className="flex h-[100svh] min-h-0 flex-col overflow-hidden pb-0 lg:block lg:py-0">
       {/* Mobile top bar keeps the current page label centered between nav and account controls. */}
       <div className={cn("sticky left-0 right-0 top-0 z-[70] flex items-center justify-between gap-3 border-x-0 border-t-0 px-3 lg:hidden", mobileHeaderHeightClass, shellSurfaceClass)}>
         <button
@@ -306,7 +316,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             type="button"
             className={cn(
               shellControlClass,
-              "size-11 overflow-hidden p-0",
+              "size-11 overflow-hidden bg-transparent p-0 dark:bg-transparent",
               isMobileAccountMenuOpen && "border-indigo-600/25 dark:border-indigo-400/25",
             )}
             aria-label="Open account menu"
@@ -343,7 +353,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className={cn(
-              "ml-auto flex h-full w-[88px] max-w-full overflow-hidden border-l border-slate-900/10 bg-[rgba(209,213,219,0.94)] px-0 py-0 shadow-[-20px_0_40px_rgba(15,23,42,0.14)] transition duration-200 dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)] dark:shadow-[-20px_0_40px_rgba(0,0,0,0.42)]",
+              "ml-auto flex h-full w-[88px] max-w-full overflow-hidden border-l border-slate-900/10 bg-[rgba(209,213,219,0.94)] px-0 py-0 transition duration-200 dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)]",
               isMobileAccountMenuOpen ? "translate-x-0 scale-100 opacity-100" : "translate-x-[18px] scale-[0.985] opacity-0",
             )}
             role="dialog"
@@ -378,7 +388,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className={cn(
-              "relative z-[71] h-full w-[88px] max-w-full overflow-hidden border-r border-slate-900/10 bg-[rgba(209,213,219,0.94)] px-0 py-0 shadow-[20px_0_40px_rgba(15,23,42,0.14)] transition duration-200 dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)] dark:shadow-[20px_0_40px_rgba(0,0,0,0.42)]",
+              "relative z-[71] h-full w-[88px] max-w-full overflow-hidden border-r border-slate-900/10 bg-[rgba(209,213,219,0.94)] px-0 py-0 transition duration-200 dark:border-white/12 dark:bg-[rgba(31,41,55,0.95)]",
               isMobileNavOpen ? "translate-x-0 scale-100 opacity-100" : "-translate-x-[18px] scale-[0.985] opacity-0",
             )}
             role="dialog"
@@ -410,13 +420,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div
         className={cn(
-          "lg:grid lg:min-h-screen lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start lg:gap-0",
+          "flex min-h-0 flex-1 flex-col lg:grid lg:h-[100svh] lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start lg:gap-0",
         )}
       >
         {/* Desktop mode pins the shell navigation into a narrow left rail. */}
         <aside
           className={cn(
-            "relative z-20 hidden lg:sticky lg:py-1 lg:flex lg:h-screen lg:flex-col lg:self-start lg:overflow-visible lg:rounded-none lg:border-l-0 lg:border-t-0 lg:border-b-0 lg:px-1.5",
+            "relative z-20 hidden lg:sticky lg:py-1 lg:flex lg:h-[100svh] lg:flex-col lg:self-start lg:overflow-visible lg:rounded-none lg:border-l-0 lg:border-t-0 lg:border-r-0 lg:border-b-0 lg:px-1.5",
             shellSurfaceClass,
           )}
           aria-label="Primary navigation"
@@ -456,7 +466,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 className={cn(
                   "grid w-full min-h-[72px] place-items-center gap-0.5 rounded-none border border-transparent bg-transparent p-0.5 transition duration-150 hover:border-indigo-600/25 hover:bg-indigo-500/8 dark:hover:border-indigo-400/20 dark:hover:bg-indigo-400/10",
-                  isAccountMenuOpen && "bg-indigo-500 border-indigo-400/20 dark:border-indigo-400/25",
+                  isAccountMenuOpen && "border-indigo-400/20 dark:border-indigo-400/25",
                 )}
                 aria-label="Open account menu"
                 aria-haspopup="menu"
@@ -495,9 +505,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main className="relative z-0 flex min-h-[calc(100svh-4rem)] min-w-0 flex-col lg:min-h-screen lg:flex">
+        <main className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col lg:overflow-hidden lg:h-[100svh] lg:flex lg:bg-[rgba(209,213,219,0.94)] lg:pt-3 lg:pb-3 lg:pr-3 dark:lg:bg-[rgba(31,41,55,0.95)]">
           {/* Children are stretched so each page can own the full available shell height. */}
-          <div className="flex min-h-full w-full flex-1 flex-col [&>*]:flex [&>*]:min-h-full [&>*]:flex-1 [&>*]:flex-col">{children}</div>
+          <NavProvider currentNavItem={currentNavItem}>
+            <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto [&>*]:flex [&>*]:min-h-0 [&>*]:flex-1 [&>*]:flex-col">{children}</div>
+          </NavProvider>
         </main>
       </div>
 
@@ -505,7 +517,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {isSignOutModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/18 p-6 backdrop-blur-[8px] dark:bg-black/42" role="presentation" onClick={() => setIsSignOutModalOpen(false)}>
           <div
-            className="w-full max-w-[420px] rounded-none border border-slate-900/10 bg-[rgba(243,244,246,0.92)] p-6 shadow-[0_20px_54px_rgba(15,23,42,0.10)] dark:border-white/10 dark:bg-[rgba(58,64,74,0.92)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)]"
+            className="w-full max-w-[420px] rounded-none border border-slate-900/10 bg-[rgba(243,244,246,0.92)] p-6 dark:border-white/10 dark:bg-[rgba(58,64,74,0.92)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="signout-title"
